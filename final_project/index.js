@@ -7,8 +7,9 @@ const genl_routes = require('./router/general.js').general;
 const app = express();
 
 app.use(express.json());
-
+app.use("/", genl_routes);
 app.use("/customer",session({secret:"fingerprint_customer",resave: true, saveUninitialized: true}))
+app.use("/customer", customer_routes);
 
 app.use("/customer/auth/*", function auth(req, res, next) {
     // Check if user is logged in and has valid access token
@@ -31,7 +32,7 @@ app.use("/customer/auth/*", function auth(req, res, next) {
  
 const PORT =5001;
 
-app.use("/customer", customer_routes);
-app.use("/", genl_routes);
+
+
 
 app.listen(PORT,()=>console.log("Server is running"));

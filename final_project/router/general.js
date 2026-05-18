@@ -8,15 +8,24 @@ const public_users = express.Router();
 public_users.post("/register", (req,res) => {
   //Write your code here
   const { username, password } = req.body;
- // Check if both username and password are provided
-    if (!username || !password) {
-        return res.status(400).json({ error: "Missing fields" });
-    }
-    if (users[username]) {
-        return res.status(400).json({ error: "User already exists" });
-    }
-    users[username] = { password: password }; 
-    
+  if (!username || !password) {
+    return res.status(400).json({ error: "Missing fields" });
+}
+
+// 2. Check if user already exists in the ARRAY
+// We use .find() to see if any object in the array has this username
+const userExists = users.find(user => user.username === username);
+
+if (userExists) {
+    return res.status(400).json({ error: "User already exists" });
+}
+
+// 3. PUSH the new user object into the array
+users.push({
+    "username": username,
+    "password": password
+});
+
 return res.status(201).json({ message: "User registered!" });
 
 
@@ -30,7 +39,14 @@ public_users.get('/',function (req, res) {
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const isbn = req.params.isbn;
+  const book = books[isbn]; // Direct lookup by key
+
+    if (book) {
+        res.status(200).json(book);
+    } else {
+        res.status(404).json({ message: "Book not found" });
+    }
  });
   
 // Get book details based on author
@@ -63,8 +79,15 @@ public_users.get('/title/:title',function (req, res) {
 
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    const isbn = req.params.isbn;
+    const book = books[isbn];
+
+    if (book) {
+        // Return only the reviews object, not the whole book
+        res.status(200).json(book.reviews);
+    } else {
+        res.status(404).json({ message: "Book not found" });
+    }
 });
 
 module.exports.general = public_users;
