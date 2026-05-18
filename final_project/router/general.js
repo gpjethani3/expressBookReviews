@@ -31,50 +31,88 @@ return res.status(201).json({ message: "User registered!" });
 
 });
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  //Write your code here
-  return res.send(JSON.stringify(books,null,4));
+public_users.get('/', async (req, res) => {
+  try {
+    // In a real app, you might do: const books = await Book.find({});
+    // For now, we are simulating an async process
+    const allBooks = await Promise.resolve(books);
+
+    if (allBooks) {
+      return res.status(200).send(JSON.stringify(allBooks, null, 4));
+    } else {
+      return res.status(404).json({ message: "No books found" });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: "Error fetching books", error: error.message });
+  }
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-  //Write your code here
-  const isbn = req.params.isbn;
-  const book = books[isbn]; // Direct lookup by key
+public_users.get('/isbn/:isbn', async (req, res) => {
+    try {
+        const isbn = req.params.isbn;
 
-    if (book) {
-        res.status(200).json(book);
-    } else {
-        res.status(404).json({ message: "Book not found" });
+        // Simulating an asynchronous lookup
+        // In a database, this would be: await Book.findOne({ isbn: isbn });
+        const book = await Promise.resolve(books[isbn]);
+
+        if (book) {
+            return res.status(200).json(book);
+        } else {
+            return res.status(404).json({ message: "Book not found" });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: "Error retrieving book details" });
     }
- });
+});
+
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-  //Write your code here
-  const author = req.params.author;
-  
-  const filteredBooks = Object.values(books).filter(book => book.author.toLowerCase() === author.toLowerCase());
-  
-  if (filteredBooks.length > 0) {
-    res.status(200).json(filteredBooks);
-} else {
-    res.status(404).json({ message: "No books found for this author" });
-}
+public_users.get('/author/:author', async (req, res) => {
+    try {
+        const author = req.params.author;
+
+        // Simulate an asynchronous operation
+        const allBooks = await Promise.resolve(Object.values(books));
+
+        // Filter the books by author (case-insensitive)
+        const filteredBooks = allBooks.filter(
+            book => book.author.toLowerCase() === author.toLowerCase()
+        );
+
+        if (filteredBooks.length > 0) {
+            return res.status(200).json(filteredBooks);
+        } else {
+            return res.status(404).json({ message: "No books found for this author" });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: "Error retrieving books by author" });
+    }
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-  //Write your code here
-  const title = req.params.title;
-  
-  const filteredBooks = Object.values(books).filter(book => book.title.toLowerCase() === title.toLowerCase());
-  
-  if (filteredBooks.length > 0) {
-    res.status(200).json(filteredBooks);
-} else {
-    res.status(404).json({ message: "No books found for this title" });
-}
+public_users.get('/title/:title', async (req, res) => {
+    try {
+        const title = req.params.title;
+
+        // Simulate an asynchronous filtering process
+        const findBooksByTitle = new Promise((resolve, reject) => {
+            const filteredBooks = Object.values(books).filter(
+                (book) => book.title.toLowerCase() === title.toLowerCase()
+            );
+            resolve(filteredBooks);
+        });
+
+        const results = await findBooksByTitle;
+
+        if (results.length > 0) {
+            return res.status(200).json(results);
+        } else {
+            return res.status(404).json({ message: "No books found for this title" });
+        }
+    } catch (error) {
+        return res.status(500).json({ message: "An error occurred while searching by title" });
+    }
 });
 
 //  Get book review
